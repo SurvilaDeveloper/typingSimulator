@@ -101,6 +101,7 @@ function TypingSimulator(props: {
     addedHtml?: boolean;
     handleClick: any;
     velocity?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    endFunction?: () => void;
     children: any;
 }) {
     const {
@@ -112,6 +113,7 @@ function TypingSimulator(props: {
         addedHtml = false,
         handleClick,
         velocity = 5,
+        endFunction,
         children
     } = props;
 
@@ -125,6 +127,11 @@ function TypingSimulator(props: {
     const containerRef = useRef<HTMLPreElement | null>(null);
     const userScroll = useRef(false);
     const [flickers, setFlickers] = useState(true)
+    const [ejectState, setEjectState] = useState<number>(0)
+
+    useEffect(() => {
+        setEjectState(eject)
+    }, [eject])
 
     useEffect(() => {
         let isMounted = true;
@@ -159,6 +166,7 @@ function TypingSimulator(props: {
                     }
                     typ[6].play().catch(e => { console.warn(e); })
                     counter.current = 0;
+                    endFunction && endFunction()
                 }
             }, (Math.round(Math.random() * 500 / velocity) + 20))
         }
@@ -171,15 +179,14 @@ function TypingSimulator(props: {
             } else {
                 setTextState((prev) => (prev + "\n" + text + "\n"))
             }
-
+            endFunction && endFunction()
         } else {
             loop(counter.current)
         }
-
         return () => {
             isMounted = false;
         };
-    }, [eject])
+    }, [ejectState])
 
     useEffect(() => {
         if (containerRef.current && !userScroll.current) {

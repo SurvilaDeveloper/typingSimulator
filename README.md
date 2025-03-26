@@ -11,9 +11,7 @@ TypingSimulator es un componente de React que simula la escritura de un texto co
 
 ## 📦 Instalación
 
-```sh
-npm install
-```
+Copia la carpeta typingSimulator en tu proyecto.
 
 Asegúrate de incluir los archivos de audio necesarios en `./sounds/`.
 
