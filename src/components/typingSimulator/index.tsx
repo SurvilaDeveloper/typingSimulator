@@ -60,7 +60,7 @@ function Cursor(props: { flickers?: boolean }) {
                 setCursor((prev) => (prev === " " ? "_" : " "));
             }, 500);
         } else {
-            setCursor("_");
+            setCursor("");
         }
         return () => clearTimeout(timeoutId);
     }, [flickers, cursor]);
@@ -74,10 +74,6 @@ const styles: React.CSSProperties = {
     fontFamily: "system-ui",
     fontSize: "16px",
     position: "unset",
-    display: "block",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
     whiteSpace: "normal",
     color: "rgb(0,0,0)",
     backgroundColor: "rgb(255,255,255)",
@@ -92,13 +88,19 @@ const styles: React.CSSProperties = {
     textWrap: "wrap",
 }
 
+interface HTMLText {
+    tag: string;
+    properties: string;
+    content: string;
+}
+
 function TypingSimulator(props: {
     id: string;
     style?: React.CSSProperties
     text?: string;
-    eject?: number;
+    run?: boolean;
     bash?: boolean;
-    addedHtml?: boolean;
+    isHtml?: boolean;
     handleClick: any;
     velocity?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     endFunction?: () => void;
@@ -108,9 +110,9 @@ function TypingSimulator(props: {
         id,
         style = styles,
         text = "",
-        eject = 0,
+        run = false,
         bash = false,
-        addedHtml = false,
+        isHtml = false,
         handleClick,
         velocity = 5,
         endFunction,
@@ -121,30 +123,36 @@ function TypingSimulator(props: {
         if (handleClick) handleClick();
     };
 
-
+    const [defaultStyles, setDefaultStyles] = useState<React.CSSProperties>(styles)
     const [textState, setTextState] = useState<string>(text)
     const counter = useRef(0);
     const containerRef = useRef<HTMLPreElement | null>(null);
     const userScroll = useRef(false);
     const [flickers, setFlickers] = useState(true)
-    const [ejectState, setEjectState] = useState<number>(0)
+    const [ejectState, setEjectState] = useState<boolean>(false)
 
     useEffect(() => {
-        setEjectState(eject)
-    }, [eject])
+        setDefaultStyles({ ...defaultStyles, ...style })
+    }, [style])
 
     useEffect(() => {
+        setEjectState(run)
+    }, [run])
+
+    useEffect(() => {
+        if (ejectState === false) {
+            return
+        }
         let isMounted = true;
         const tx = Array.from(text)
         const loop = (count: number) => {
-            if (!isMounted || eject === 0) {
+            if (!isMounted || run === false) {
                 return
             }
             setTimeout(() => {
                 if (text && count < Array.from(text).length) {
                     setFlickers(false)
                     setTextState((prev) => (prev + tx[count]))
-                    counter.current++;
                     const ind = Math.floor(Math.random() * 5)
                     if (tx[count] === " ") {
                         typ[5].play().catch((e) => { console.warn(e); })
@@ -156,6 +164,7 @@ function TypingSimulator(props: {
                     } else {
                         typ[ind].play().catch(e => { console.warn(e); })
                     }
+                    counter.current = counter.current + 1;
                     loop(counter.current);
                 } else {
                     setFlickers(true)
@@ -165,19 +174,18 @@ function TypingSimulator(props: {
                         setTextState((prev) => (prev + '\n'))
                     }
                     typ[6].play().catch(e => { console.warn(e); })
-                    counter.current = 0;
                     endFunction && endFunction()
                 }
             }, (Math.round(Math.random() * 500 / velocity) + 20))
         }
-        if (addedHtml) {
-            if (!isMounted || eject === 0) {
+        if (isHtml) {
+            if (!isMounted || run === false) {
                 return
             }
             if (bash) {
-                setTextState((prev) => (prev + "\n" + text + "\n" + ">"))
+                setTextState((prev) => (prev + text + ">"))//((prev) => (prev + "\n" + text + "\n" + ">"))
             } else {
-                setTextState((prev) => (prev + "\n" + text + "\n"))
+                setTextState((prev) => (prev + text))//((prev) => (prev + "\n" + text + "\n"))
             }
             endFunction && endFunction()
         } else {
@@ -185,6 +193,7 @@ function TypingSimulator(props: {
         }
         return () => {
             isMounted = false;
+            counter.current = 0;
         };
     }, [ejectState])
 
@@ -196,25 +205,182 @@ function TypingSimulator(props: {
 
     const handleScroll = () => {
         if (!containerRef.current) return;
-
         const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
         userScroll.current = scrollTop + clientHeight < scrollHeight - 10;
     };
 
     return (
         <pre
-            style={{ ...style }}
+            style={{ ...defaultStyles }}
             id={id}
             ref={containerRef}
             onClick={onClickHandler}
             onScroll={handleScroll}
         >
-            <span dangerouslySetInnerHTML={{ __html: (bash ? ">" : "") + textState }} style={{ width: 'auto', display: 'contents' }} />
+            <span dangerouslySetInnerHTML={{ __html: (bash ? ">" : "") + textState + (flickers ? " " : "_") }} style={{ width: 'auto', display: 'contents' }} />
             <Cursor flickers={flickers} />
             {children}
-
         </ pre>
     );
 }
 
-export default TypingSimulator;
+function TypingSimulatorControl(props: {
+    id: string;
+    style?: React.CSSProperties
+    bash?: boolean;
+    typed?: boolean;
+    handleClick: any;
+    velocity?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    endFunction?: () => void;
+    children: any;
+    textsArray?: string[] | HTMLText[];
+    run: boolean;
+}) {
+    const {
+        id,
+        style = styles,
+        bash = false,
+        typed = true,
+        handleClick,
+        velocity = 5,
+        endFunction,
+        children,
+        textsArray,
+        run
+    } = props;
+
+    const [textsArrayState] = useState<string[] | HTMLText[] | undefined>(textsArray)
+    const [beginState, setBeginState] = useState<boolean>(false)
+    const [textState, setTextState] = useState<string>("")
+    const [ejectState, setEjectState] = useState<boolean>(false)
+    const count = useRef(0)
+    const [next, setNext] = useState(false)
+    const [nextHtml, setNextHtml] = useState(false)
+    const [isHtmlState, setIsHtmlState] = useState(false)///////////////
+    const [isTag, setIsTag] = useState(false)
+    const [writePart, setWritePart] = useState(0)
+    const [bashState] = useState(bash)
+    const [typedState] = useState(typed)
+
+    useEffect(() => {
+        return setBeginState(run);
+    }, [run])
+
+    useEffect(() => {
+        if (textsArrayState?.length === 0 || beginState === false) { return }
+        if (
+            Array.isArray(textsArrayState)
+            && typeof textsArrayState[0] === "string"
+        ) {
+            setIsHtmlState(false)
+            setNext(!next);
+        } else if (
+            Array.isArray(textsArrayState) &&
+            typeof textsArrayState[0] === "object" &&
+            "tag" in textsArrayState[0] &&
+            "properties" in textsArrayState[0] &&
+            "content" in textsArrayState[0]
+        ) {
+            setIsHtmlState(true)
+            setNextHtml(!nextHtml);
+        }
+    }, [beginState])
+
+    useEffect(() => {
+        if (textsArrayState?.length === 0 || beginState === false) { return }
+        if (count.current === textsArrayState?.length) {
+            return
+        }
+        if (textsArrayState) {
+
+            if (typedState) {
+                setTextState(textsArrayState[count.current] as string)
+                setIsTag(false)
+                setEjectState(true)
+
+            } else {
+                setTextState(textsArrayState[count.current] as string)
+                setIsTag(true)
+                setEjectState(true)
+            }
+        }
+    }, [next])
+
+    useEffect(() => {
+        if (textsArrayState?.length === 0 || beginState === false) { return }
+        if (count.current === textsArrayState?.length) {
+            return
+        }
+        if (textsArrayState) {
+            if (writePart === 0) {
+                const tx = "<" + (textsArrayState[count.current] as HTMLText).tag + " " + (textsArrayState[count.current] as HTMLText).properties + ">"
+                setWritePart(1);
+                setTextState(tx)
+                setIsTag(true)
+                setEjectState(true)
+            } else if (writePart === 1) {
+                setTextState((textsArrayState[count.current] as HTMLText).content)
+                setWritePart(2)
+                setIsTag(false)
+                setEjectState(true)
+            } else if (writePart === 2) {
+                setWritePart(0)
+                const tx = "</" + (textsArrayState[count.current] as HTMLText).tag + ">" + (bashState ? ">" : "")
+                setTextState(tx)
+                setIsTag(true)
+                setEjectState(true)
+                //setBashState(true)
+                count.current = count.current + 1
+            }
+        }
+    }, [nextHtml])
+
+    function nextStep() {
+        console.log("nextStep");
+        setNext(!next)
+        setEjectState(false)
+        count.current = count.current + 1
+    }
+
+    function nextStepHtml() {
+        setNextHtml(!nextHtml)
+        setEjectState(false)
+    }
+
+    const end = () => {
+        if (count.current + 1 === textsArrayState?.length) {
+            setBeginState(false)
+            setEjectState(false)
+            count.current = 0;
+            endFunction && endFunction()
+            return
+        }
+        setTimeout(() => {
+            if (isHtmlState) {
+                setEjectState(false)
+                nextStepHtml()
+            } else {
+                setEjectState(false)
+                nextStep()
+            }
+        }, 200)
+    }
+
+    return (
+        <TypingSimulator
+            text={textState}
+            run={ejectState}
+            id={id}
+            style={style}
+            bash={false}
+            handleClick={handleClick}
+            velocity={velocity}
+            children={children}
+            endFunction={end}
+            isHtml={isTag}
+        />
+    )
+}
+
+export { TypingSimulator, TypingSimulatorControl };
+export type { HTMLText };

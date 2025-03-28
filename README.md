@@ -1,72 +1,84 @@
-# TypingSimulator
+(Este es un archivo generado por chatGPT para el proceso de desarrollo y puede contener imprecisiones.
+En futuros commits será corregido)
 
-TypingSimulator es un componente de React que simula la escritura de un texto con efectos de sonido de teclado y un cursor parpadeante.
+# Typing Simulator
 
-## 🚀 Características
-- Simulación de escritura con velocidad configurable.
-- Efectos de sonido realistas para cada tecla.
-- Cursor parpadeante dinámico.
-- Soporte para formato tipo terminal (`bash`).
-- Permite agregar texto dinámico.
+Este proyecto es un simulador de tipeo que reproduce sonidos al escribir y permite visualizar texto de manera dinámica, ideal para interfaces interactivas, simulaciones de terminal o efectos visuales en páginas web.
 
-## 📦 Instalación
+## Características
+- Simulación realista de escritura con efectos de sonido.
+- Soporte para texto plano y formato HTML.
+- Control de velocidad de escritura.
+- Cursor animado tipo terminal.
+- Funcionalidad configurable para iniciar y detener la simulación.
+- Compatible con eventos de usuario como clics y teclas.
+- Control adicional con `TypingSimulatorControl` para manejar el simulador dinámicamente.
 
-Copia la carpeta typingSimulator en tu proyecto.
+## Uso
+Para ejecutar el proyecto en un entorno de desarrollo:
+```sh
+npm run dev
+```
+Luego, abre en el navegador `http://localhost:3000/`.
 
-Asegúrate de incluir los archivos de audio necesarios en `./sounds/`.
-
-## 📌 Uso
-
-```tsx
-import TypingSimulator from "./TypingSimulator";
-
-function App() {
-    return (
-        <TypingSimulator
-            id="typing-box"
-            text="Hello, this is a typing simulation!"
-            eject={1}
-            bash={true}
-            velocity={5}
-            handleClick={() => console.log("Clicked!")}
-        />
-    );
-}
-
-export default App;
+Para compilar el proyecto para producción:
+```sh
+npm run build
 ```
 
-## ⚙️ Props
+## Archivos principales
+- `index.tsx`: Implementación del simulador de tipeo.
+- `TypingSimulator.tsx`: Componente principal del simulador.
+- `TypingSimulatorControl.tsx`: Componente que permite controlar dinámicamente el simulador de tipeo.
+- `sounds/`: Carpeta con los efectos de sonido.
+- `public/`: Archivos estáticos del proyecto.
+- `package.json`: Dependencias y configuración del proyecto.
 
-| Prop          | Tipo                  | Descripción |
-|--------------|----------------------|-------------|
-| `id`         | `string`              | ID del componente. |
-| `style`      | `React.CSSProperties` | Estilos personalizados. |
-| `text`       | `string`              | Texto a escribir. |
-| `eject`      | `number`              | Activa la simulación (0 = desactivado). |
-| `bash`       | `boolean`             | Estilo terminal (agrega `>` al inicio de cada línea). |
-| `addedHtml`  | `boolean`             | Permite HTML en el texto. |
-| `handleClick` | `function`           | Callback al hacer clic. |
-| `velocity`   | `1-10`                | Velocidad de escritura. |
-| `children`   | `React.ReactNode`     | Contenido adicional. |
+## Personalización
+Puedes ajustar la velocidad de tipeo, los sonidos y otros efectos modificando los parámetros en `TypingSimulatorControl`.
 
-## 🎵 Sonidos
+Ejemplo de uso del componente:
+```tsx
+<TypingSimulator 
+    id="typing-box" 
+    text="Bienvenido al simulador de tipeo..." 
+    run={true} 
+    velocity={5} 
+    handleClick={() => console.log("Clic en el simulador")} 
+/>
+```
 
-Los archivos de sonido deben estar en `./sounds/` y pueden incluir:
-- `typing0.mp3`
-- `typing2.mp3`
-- `typing3.mp3`
-- `typing4.mp3`
-- `typing5.mp3`
-- `typingSpace.mp3`
-- `typingEnter.mp3`
+Para un control más avanzado, puedes usar `TypingSimulatorControl` para iniciar, detener o cambiar dinámicamente el texto sin necesidad de anidar un `TypingSimulator` dentro de otro:
+```tsx
+<TypingSimulatorControl />
+```
 
-## 🛠 Contribuir
+## Contribución
+Si deseas mejorar el proyecto, sigue estos pasos:
+1. Haz un **fork** del repositorio.
+2. Crea una nueva rama para tu característica:
+   ```sh
+   git checkout -b feature-nueva
+   ```
+3. Realiza los cambios y haz un commit:
+   ```sh
+   git commit -m "Agregada nueva característica"
+   ```
+4. Sube los cambios a tu fork y abre un **pull request**.
 
-¡Las contribuciones son bienvenidas! Si encuentras un error o quieres mejorar algo, abre un issue o pull request. 😊
+## Roadmap
+- [ ] Agregar más efectos de sonido.
+- [ ] Permitir personalización del cursor.
+- [ ] Incluir soporte para distintos temas visuales.
+- [ ] Implementar una API para controlar el simulador desde otros componentes.
 
-## 📄 Licencia
+## Licencia
+Este proyecto está bajo la licencia MIT. Puedes usarlo, modificarlo y distribuirlo libremente bajo esta licencia.
 
-MIT License. ¡Úsalo como quieras! 🚀
+---
+### Autor
+Desarrollado por [Gabriel Survila](https://github.com/tu-usuario). ¡Si te gusta el proyecto, dale una estrella ⭐ en GitHub!
+
+
 
 
