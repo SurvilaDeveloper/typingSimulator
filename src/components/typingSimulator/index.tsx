@@ -74,18 +74,18 @@ const styles: React.CSSProperties = {
     fontFamily: "system-ui",
     fontSize: "16px",
     position: "unset",
-    whiteSpace: "normal",
     color: "rgb(0,0,0)",
     backgroundColor: "rgb(255,255,255)",
     left: 0,
     top: 0,
     width: 100,
     height: 100,
-    overflowY: "scroll",
+    overflowY: "auto",
+    whiteSpace: "pre-wrap",
     border: "1px solid black",
     borderRadius: "5px",
     cursor: "default",
-    textWrap: "wrap",
+
 }
 
 interface HTMLText {
@@ -95,16 +95,17 @@ interface HTMLText {
 }
 
 function TypingSimulator(props: {
-    id: string;
+    id?: string;
     style?: React.CSSProperties
     text?: string;
     run?: boolean;
     bash?: boolean;
     isHtml?: boolean;
-    handleClick: any;
+    handleClick?: () => void;
     velocity?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     endFunction?: () => void;
-    children: any;
+    clear?: boolean;
+    children?: any;
 }) {
     const {
         id,
@@ -116,6 +117,7 @@ function TypingSimulator(props: {
         handleClick,
         velocity = 5,
         endFunction,
+        clear = false,
         children
     } = props;
 
@@ -130,6 +132,12 @@ function TypingSimulator(props: {
     const userScroll = useRef(false);
     const [flickers, setFlickers] = useState(true)
     const [ejectState, setEjectState] = useState<boolean>(false)
+    const [clearState, setClearState] = useState<boolean>(clear)
+
+    /*useEffect(() => {
+        //setClearState(clear)
+        setEjectState(true)
+    }, [clear])*/
 
     useEffect(() => {
         setDefaultStyles({ ...defaultStyles, ...style })
@@ -137,11 +145,16 @@ function TypingSimulator(props: {
 
     useEffect(() => {
         setEjectState(run)
-    }, [run])
+        //setClearState(clear)
+    }, [run, clear])
 
     useEffect(() => {
         if (ejectState === false) {
             return
+        }
+        if (clear) {
+            setTextState("")
+            //setClearState(false)
         }
         let isMounted = true;
         const tx = Array.from(text)
@@ -171,7 +184,9 @@ function TypingSimulator(props: {
                     if (bash) {
                         setTextState((prev) => (prev + '\n' + '>'))
                     } else {
-                        setTextState((prev) => (prev + '\n'))
+                        if (!clear) {
+                            setTextState((prev) => (prev + '\n'))
+                        }
                     }
                     typ[6].play().catch(e => { console.warn(e); })
                     endFunction && endFunction()
@@ -182,6 +197,10 @@ function TypingSimulator(props: {
             if (!isMounted || run === false) {
                 return
             }
+            if (clear) {
+                setTextState("")
+                //setClearState(false)
+            }
             if (bash) {
                 setTextState((prev) => (prev + text + ">"))//((prev) => (prev + "\n" + text + "\n" + ">"))
             } else {
@@ -189,6 +208,7 @@ function TypingSimulator(props: {
             }
             endFunction && endFunction()
         } else {
+
             loop(counter.current)
         }
         return () => {
@@ -225,14 +245,14 @@ function TypingSimulator(props: {
 }
 
 function TypingSimulatorControl(props: {
-    id: string;
+    id?: string;
     style?: React.CSSProperties
     bash?: boolean;
     typed?: boolean;
-    handleClick: any;
+    handleClick?: () => void;
     velocity?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     endFunction?: () => void;
-    children: any;
+    children?: any;
     textsArray?: string[] | HTMLText[];
     run: boolean;
 }) {
