@@ -132,12 +132,11 @@ function TypingSimulator(props: {
     const userScroll = useRef(false);
     const [flickers, setFlickers] = useState(true)
     const [ejectState, setEjectState] = useState<boolean>(false)
-    const [clearState, setClearState] = useState<boolean>(clear)
 
     /*useEffect(() => {
-        //setClearState(clear)
-        setEjectState(true)
-    }, [clear])*/
+            //setClearState(clear)
+            setEjectState(true)
+        }, [clear])*/
 
     useEffect(() => {
         setDefaultStyles({ ...defaultStyles, ...style })
@@ -191,7 +190,7 @@ function TypingSimulator(props: {
                     typ[6].play().catch(e => { console.warn(e); })
                     endFunction && endFunction()
                 }
-            }, (Math.round(Math.random() * 500 / velocity) + 20))
+            }, (Math.round(Math.random() * 100 / velocity) + 20))
         }
         if (isHtml) {
             if (!isMounted || run === false) {
@@ -323,15 +322,20 @@ function TypingSimulatorControl(props: {
                 setIsTag(true)
                 setEjectState(true)
             }
+            count.current = count.current + 1
         }
     }, [next])
 
     useEffect(() => {
+        console.log(textsArrayState?.length === 0 || beginState === false);
         if (textsArrayState?.length === 0 || beginState === false) { return }
+        console.log("* ", count.current === textsArrayState?.length);
         if (count.current === textsArrayState?.length) {
             return
         }
+        console.log("** ", textsArrayState);
         if (textsArrayState) {
+            console.log("c.c ", count.current);
             if (writePart === 0) {
                 const tx = "<" + (textsArrayState[count.current] as HTMLText).tag + " " + (textsArrayState[count.current] as HTMLText).properties + ">"
                 setWritePart(1);
@@ -359,16 +363,19 @@ function TypingSimulatorControl(props: {
         console.log("nextStep");
         setNext(!next)
         setEjectState(false)
-        count.current = count.current + 1
+        //count.current = count.current + 1
     }
 
     function nextStepHtml() {
+        console.log("nextStepHtml");
+        //count.current = count.current + 1
         setNextHtml(!nextHtml)
         setEjectState(false)
+
     }
 
     const end = () => {
-        if (count.current + 1 === textsArrayState?.length) {
+        if (count.current === textsArrayState?.length) {
             setBeginState(false)
             setEjectState(false)
             count.current = 0;
